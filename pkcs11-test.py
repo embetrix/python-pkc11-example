@@ -130,7 +130,7 @@ def main():
     rsa_key_uri = " pkcs11:token=token0;object=testkeyRSA2048"
     data = b"Hello, world!"
     signature = pkcs11_sign(rsa_key_uri, "12345", data)
-    #pkcs11_verify(rsa_key_uri, "12345", data, signature)
+    pkcs11_verify(rsa_key_uri, "12345", data, signature)
 
     aes_key_uri = "pkcs11:token=token0;object=testkeyAES256"
     ivt = os.urandom(16).hex()
