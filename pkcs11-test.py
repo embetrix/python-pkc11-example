@@ -5,7 +5,7 @@ import re
 import pkcs11
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import ECC, RSA
-from Crypto.Signature import DSS
+from Crypto.Signature import DSS, PKCS1_v1_5
 from pkcs11 import KeyType, ObjectClass, Mechanism
 from pkcs11.util.ec import encode_ec_public_key
 from pkcs11.util.rsa import encode_rsa_public_key
@@ -35,7 +35,6 @@ def parse_pkcs11_uri(uri):
     pkcs11_dict = {**path_dict, **{k: v[0] for k, v in query_dict.items()}}
 
     return pkcs11_dict
-
 
 def pkcs11_sign(key_uri, pin, data):
     pkcs11_dict = parse_pkcs11_uri(key_uri)
@@ -68,7 +67,7 @@ def pkcs11_verify(key_uri, pin, data, signature):
         # Find the private key object
         pubkey  = session.get_key(label=pkcs11_dict['object'], object_class=ObjectClass.PUBLIC_KEY)
         if pubkey.key_type == KeyType.RSA:
-            verifier = DSS.new(RSA.import_key(encode_rsa_public_key(pubkey)), 'fips-186-3')
+            verifier = PKCS1_v1_5.new(RSA.import_key(encode_rsa_public_key(pubkey)))
         elif pubkey.key_type == KeyType.EC:
             verifier = DSS.new(ECC.import_key(encode_ec_public_key(pubkey)), 'fips-186-3')
         else:
