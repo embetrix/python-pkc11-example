@@ -36,7 +36,7 @@ def parse_pkcs11_uri(uri):
     return pkcs11_dict
 
 
-def sign_data_with_pkcs11(key_uri, pin, data):
+def pkcs11_sign(key_uri, pin, data):
     pkcs11_dict = parse_pkcs11_uri(key_uri)
     lib = pkcs11.lib(os.environ['PKCS11_MODULE_PATH'])
     token = lib.get_token(token_label=pkcs11_dict['token'])
@@ -52,7 +52,7 @@ def sign_data_with_pkcs11(key_uri, pin, data):
 
     return signature
 
-def verify_data_with_pkcs11(key_uri, pin, signature, data):
+def pkcs11_verify(key_uri, pin, data, signature):
     pkcs11_dict = parse_pkcs11_uri(key_uri)
     lib = pkcs11.lib(os.environ['PKCS11_MODULE_PATH'])
     token = lib.get_token(token_label=pkcs11_dict['token'])
@@ -71,7 +71,7 @@ def verify_data_with_pkcs11(key_uri, pin, signature, data):
         except ValueError:
             print('The signature is not valid.')
 
-def encrypt_data_with_pkcs11(key_uri, pin, ivt, data):
+def pkcs11_encrypt(key_uri, pin, ivt, data):
     pkcs11_dict = parse_pkcs11_uri(key_uri)
     lib = pkcs11.lib(os.environ['PKCS11_MODULE_PATH'])
     token = lib.get_token(token_label=pkcs11_dict['token'])
@@ -86,7 +86,7 @@ def encrypt_data_with_pkcs11(key_uri, pin, ivt, data):
 
     return data_encrypt
 
-def decrypt_data_with_pkcs11(key_uri, pin, ivt, data):
+def pkcs11_decrypt(key_uri, pin, ivt, data):
     pkcs11_dict = parse_pkcs11_uri(key_uri)
     lib = pkcs11.lib(os.environ['PKCS11_MODULE_PATH'])
     token = lib.get_token(token_label=pkcs11_dict['token'])
@@ -102,23 +102,23 @@ def decrypt_data_with_pkcs11(key_uri, pin, ivt, data):
     return data_decrypt
 
 def main():
-    key_uri = "pkcs11:model=SoftHSM%20v2;manufacturer=SoftHSM%20project;serial=dbc936d64a10392e;token=token0;id=%66;object=testkeyECp256;type=private"
+    key_uri = "pkcs11:token=token0;object=testkeyECp256"
     print(parse_pkcs11_uri(key_uri))
-    print(parse_pkcs11_uri(key_uri)['model'])
-    print(parse_pkcs11_uri(key_uri)['manufacturer'])
+    # print(parse_pkcs11_uri(key_uri)['model'])
+    # print(parse_pkcs11_uri(key_uri)['manufacturer'])
     print(parse_pkcs11_uri(key_uri)['token'])
-    print(parse_pkcs11_uri(key_uri)['id'].encode('utf-8').hex())
+    #print(parse_pkcs11_uri(key_uri)['id'].encode('utf-8').hex())
     print(parse_pkcs11_uri(key_uri)['object'])
-    print(parse_pkcs11_uri(key_uri)['type'])
+    # print(parse_pkcs11_uri(key_uri)['type'])
 
     data = b"Hello, world!"
-    signature = sign_data_with_pkcs11(key_uri, "12345", data)
-    verify_data_with_pkcs11(key_uri, "12345", signature, data)
+    signature = pkcs11_sign(key_uri, "12345", data)
+    pkcs11_verify(key_uri, "12345", data, signature)
 
     key_uri = "pkcs11:token=token0;object=testkeyAES256"
     ivt = os.urandom(16).hex()
-    data_encrypt= encrypt_data_with_pkcs11(key_uri, "12345", ivt, data)
-    data_decrypt = decrypt_data_with_pkcs11(key_uri, "12345", ivt, data_encrypt)
+    data_encrypt = pkcs11_encrypt(key_uri, "12345", ivt, data)
+    data_decrypt = pkcs11_decrypt(key_uri, "12345", ivt, data_encrypt)
     print(data_decrypt)
 
 if __name__ == "__main__":
